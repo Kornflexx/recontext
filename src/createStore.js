@@ -22,11 +22,33 @@ const userEntity = createStoreEntity(
     }
 )
 
+const myMiddleware = state => next => (actionResult, actions) => {
 
+    if (actionResult.actionKey === 'setUserAge') {
+
+        const otherps = actions.user.setUserName(state)('cannard' + actionResult.partialState.age)
+        next(otherps)
+
+    }
+    next(actionResult)
+
+}
+
+const agePlusOne = state => next => (actionResult, actions) => {
+
+    //
+    if (actionResult.actionKey === 'setUserAge') {
+        setTimeout(() => next(actions.user.setUserAge(state)(actionResult.partialState.age + 1)), 1000)
+        
+        return
+    }
+    next(actionResult)
+
+}
 
 export const store = createStore({
     user: userEntity
-})
+}, [myMiddleware, agePlusOne])
 
 
 const { Consumer, Provider } = createStoreContext(store)

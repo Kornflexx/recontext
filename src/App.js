@@ -3,7 +3,6 @@ import logo from './logo.svg';
 import './App.css';
 
 import Child from './Child'
-console.log('child', Child)
 
 class App extends Component {
   render() {
