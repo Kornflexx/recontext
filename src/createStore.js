@@ -38,7 +38,7 @@ const agePlusOne = state => next => (actionResult, actions) => {
 
     //
     if (actionResult.actionKey === 'setUserAge') {
-        setTimeout(() => next(actions.user.setUserAge(state)(actionResult.partialState.age + 1)), 1000)
+        next(actions.user.setUserAge(state)(actionResult.partialState.age + 1))
         
         return
     }

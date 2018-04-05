@@ -88,12 +88,15 @@ export const createStore = (entities, middlewares = []) => {
     }
 }
 
-export const connect = (...Consumers) => ComponentToWrap => () =>
-    Consumers.reduce((ConnectedComponent, Consumer) =>
-        <Consumer>
-            {props => <ConnectedComponent {...props} />}
-        </Consumer>
-    , ComponentToWrap)
+export const connect = (Consumer, mapStoreToProps = (store) => store) => ComponentToWrap => ownProps =>
+    <Consumer>
+        {store =>
+            <ComponentToWrap
+                {...ownProps}
+                {...mapStoreToProps(store, ownProps)}
+            />
+        }
+    </Consumer>
 
 
 const mergeState = (state, partialState) =>
