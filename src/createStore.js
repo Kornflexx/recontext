@@ -6,21 +6,24 @@ import makeStoreProvider,
 } from './lib'
 import React from 'react'
 
-const userEntity = createStoreEntity(
-    {
-        name: 'toto',
-        age: 10,
-        level: 1
-    },
-    {
-        setUserAge: (state) => (age) => ({
-            age
-        }),
-        setUserName: (state) => (name) => ({
-            name
-        })
-    }
-)
+const initialUserState = {
+    name: 'toto',
+    age: 10,
+    level: 1
+}
+
+const setUserAge = state => (age) => ({
+    age
+})
+
+const setUserName = state => (name) => ({
+    name
+})
+
+const userEntity = createStoreEntity(initialUserState, {
+    setUserAge,
+    setUserName,
+})
 
 const myMiddleware = state => next => (actionResult, actions) => {
 
