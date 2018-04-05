@@ -1,11 +1,13 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
-import './index.css';
-import App from './App';
-import { StoreProvider } from './createStore'
+import connect from './connect'
+import createEntity from './createEntity'
+import createStore from './createStore'
+import createStoreProvider from './createStoreProvider'
+import createStoreContext from './createStoreContext'
 
-ReactDOM.render(
-    <StoreProvider>
-        <App />
-    </StoreProvider>,
-document.getElementById('root'));
+export {
+    createStore,
+    createEntity,
+    connect,
+    createStoreContext,
+    createStoreProvider
+}

@@ -1,60 +1,46 @@
-import makeStoreProvider,
-{
-    createStore,
-    createStoreContext,
-    createStoreEntity
-} from './lib'
-import React from 'react'
+import { getNextObservedBits } from './utils/observedBits'
+import { makeActionDispatcher, makeActionWithMeta  } from './utils/actions'
 
-const initialUserState = {
-    name: 'toto',
-    age: 10,
-    level: 1
-}
+export default (entities, middlewares = []) => {
 
-const setUserAge = state => (age) => ({
-    age
-})
+    const store = Object.keys(entities).reduce((store, entityKey, entityIndex) => ({
+        observedBits: Object.keys(entities[entityKey].state).reduce((observedBits, stateKey) => ({
+            ...observedBits,
+            [stateKey]: getNextObservedBits(observedBits)
+        }), store.observedBits),
+        state: {
+            ...store.state,
+            [entityKey]: entities[entityKey].state
+        }
+    }), {
+        state: {},
+        observedBits: {}
+    });
 
-const setUserName = state => (name) => ({
-    name
-})
+    const makeActions = (getState, setState) => {
+        const actionDispatcher = makeActionDispatcher(getState, setState, middlewares)
+        const actionsWithMeta = Object.keys(entities).reduce((storeActions, entityKey) => ({
+            ...storeActions,
+            [entityKey]: Object.keys(entities[entityKey].actions).reduce((entityActions, actionKey) => ({
+                ...entityActions,
+                [actionKey]: makeActionWithMeta(actionKey, entityKey)(entities[entityKey].actions[actionKey])
+            }), {})
+        }), {});
 
-const userEntity = createStoreEntity(initialUserState, {
-    setUserAge,
-    setUserName,
-})
-
-const myMiddleware = state => next => (actionResult, actions) => {
-
-    if (actionResult.actionKey === 'setUserAge') {
-
-        const otherps = actions.user.setUserName(state)('cannard' + actionResult.partialState.age)
-        next(otherps)
-
-    }
-    next(actionResult)
-
-}
-
-const agePlusOne = state => next => (actionResult, actions) => {
-
-    //
-    if (actionResult.actionKey === 'setUserAge') {
-        next(actions.user.setUserAge(state)(actionResult.partialState.age + 1))
+        const actionsDispatcher = Object.keys(entities).reduce((actionsDispatcher, entityKey) => ({
+            ...actionsDispatcher,
+            [entityKey]: Object.keys(entities[entityKey].actions).reduce((entityActions, actionKey) => ({
+                ...entityActions,
+                [actionKey]: actionDispatcher(actionsWithMeta[entityKey][actionKey], actionsWithMeta)
+            }), {})
+        }), {});
         
-        return
+        return actionsDispatcher
     }
-    next(actionResult)
+
+    return {
+        ...store,
+        makeActions
+    }
 
 }
-
-export const store = createStore({
-    user: userEntity
-}, [myMiddleware, agePlusOne])
-
-
-const { Consumer, Provider } = createStoreContext(store)
-
-export const StoreProvider = makeStoreProvider(store, Provider)
-export const StoreConsumer = Consumer

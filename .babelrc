@@ -1,0 +1,31 @@
+{
+  "presets": [
+    [
+      "env",
+      {
+        "targets": {
+          "browsers": [
+            "ie >= 11"
+          ]
+        },
+        "modules": false,
+        "loose": true
+      }
+    ]
+  ],
+  "plugins": [
+    "transform-object-rest-spread",
+    "babel-plugin-transform-es2015-arrow-functions",
+    "babel-plugin-transform-class-properties",
+    ["transform-es2015-classes", { "loose": true }],
+    "transform-react-jsx",
+    "syntax-jsx"
+  ],
+  "env": {
+    "commonjs": {
+      "plugins": [
+        ["transform-es2015-modules-commonjs", { "loose": true }]
+      ]
+    }
+  }
+}
