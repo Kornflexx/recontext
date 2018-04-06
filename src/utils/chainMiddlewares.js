@@ -1,12 +1,14 @@
 
-const chainMiddlewares = (store, setState, actions, [currentMiddleware, ...middlewares]) => (actionWithMeta) => {
+const chainMiddlewares = (store, actionDispatcher, callbacks, [currentMiddleware, ...middlewares]) => (action, params, callback) => {
+    const newCallbacks = callback ?
+        [...callbacks, { action, callback }]
+        : callbacks;
+
     if (!currentMiddleware) {
-        setState({
-            [actionWithMeta.entityKey]: actionWithMeta.partialState
-        })
+        actionDispatcher(action, params, newCallbacks)
         return;
     }
-    currentMiddleware(store)(chainMiddlewares(store, setState, actions, middlewares))(actionWithMeta, actions)
+    currentMiddleware(store)(chainMiddlewares(store, actionDispatcher, newCallbacks, middlewares))(action, params)
 }
 
 export default chainMiddlewares

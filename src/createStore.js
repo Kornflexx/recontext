@@ -1,5 +1,5 @@
 import { getNextObservedBits } from './utils/observedBits'
-import { makeActionDispatcher, makeActionWithMeta  } from './utils/actions'
+import { createMiddlewareChains  } from './utils/actions'
 
 export default (entities, middlewares = []) => {
 
@@ -18,24 +18,27 @@ export default (entities, middlewares = []) => {
     });
 
     const makeActions = (getState, setState) => {
-        const actionDispatcher = makeActionDispatcher(getState, setState, middlewares)
-        const actionsWithMeta = Object.keys(entities).reduce((storeActions, entityKey) => ({
+
+        const actionMap = Object.keys(entities).reduce((storeActions, entityKey) => ({
             ...storeActions,
-            [entityKey]: Object.keys(entities[entityKey].actions).reduce((entityActions, actionKey) => ({
+            ...Object.keys(entities[entityKey].actions).reduce((entityActions, actionKey) => ({
                 ...entityActions,
-                [actionKey]: makeActionWithMeta(actionKey, entityKey)(entities[entityKey].actions[actionKey])
+                [actionKey]: {
+                    entityKey,
+                    effect: entities[entityKey].actions[actionKey]
+                }
             }), {})
         }), {});
 
-        const actionsDispatcher = Object.keys(entities).reduce((actionsDispatcher, entityKey) => ({
+        const middlewareChains = createMiddlewareChains(getState, setState, middlewares, actionMap)
+
+        return Object.keys(entities).reduce((actionsDispatcher, entityKey) => ({
             ...actionsDispatcher,
             [entityKey]: Object.keys(entities[entityKey].actions).reduce((entityActions, actionKey) => ({
                 ...entityActions,
-                [actionKey]: actionDispatcher(actionsWithMeta[entityKey][actionKey], actionsWithMeta)
+                [actionKey]: middlewareChains(entities[entityKey].actions[actionKey])
             }), {})
         }), {});
-        
-        return actionsDispatcher
     }
 
     return {
